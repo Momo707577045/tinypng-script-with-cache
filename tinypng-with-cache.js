@@ -1,10 +1,8 @@
 const fs = require('fs')
 const md5 = require('md5')
-const gutil = require('gulp-util')
 const request = require('request')
 const through = require('through2')
 const prettyBytes = require('pretty-bytes')
-const PluginError = gutil.PluginError // 错误提示
 const PLUGIN_NAME = 'gulp-tinypng-with-cache' // 插件名
 
 let AUTH_TOKEN = '' // 根据 aypi key 生成的请求头，
@@ -27,7 +25,7 @@ let compressionInfo = {
 // 记录压缩结果
 function recordResult () {
   const record = `共压缩 ${compressionInfo.num} 个文件，压缩前 ${prettyBytes(compressionInfo.originSize)}，压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，节省 ${prettyBytes(compressionInfo.saveSize)} 空间，压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%`
-  gutil.log(record)
+  console.log(record)
   recordList.push(record)
   _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList))
   _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(recordList))
@@ -45,7 +43,7 @@ function gulpMain ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minComp
   _minCompressPercentLimit = minCompressPercentLimit
   _createMd5FormOrigin = createMd5FormOrigin
   AUTH_TOKEN = Buffer.from('api:' + _apiKeyList[keyIndex]).toString('base64')
-  gutil.log(`当前使用第一个 apiKey:  ${_apiKeyList[keyIndex]}`)
+  console.log(`当前使用第一个 apiKey:  ${_apiKeyList[keyIndex]}`)
   try {
     md5RecordList = JSON.parse(fs.readFileSync(_md5RecordFilePath) || '[]')
   } catch (e) {
@@ -80,7 +78,7 @@ function gulpMain ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minComp
         const compressPercentStr = compressPercent.toFixed(0) + '%' // 压缩百分比
         if (compressPercent < _minCompressPercentLimit) { // 无效压缩，保存源文件
           md5RecordList.push(md5(file.contents)) // 记录到缓存中
-          gutil.log(`压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`)
+          console.log(`压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`)
         } else { // 有效压缩
           file.contents = data
           compressionInfo.num++
@@ -93,7 +91,7 @@ function gulpMain ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minComp
           record += `压缩: ${prettyBytes(prevSize - data.length)}`.padEnd(18)
           record += `${file.relative} `
           recordList.push(record)
-          gutil.log(record)
+          console.log(record)
         }
         this.push(file)
         _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
@@ -115,15 +113,15 @@ function checkApiKey (errorMsg, cb) {
   if (matchError.indexOf(errorMsg) > -1) {
     if (keyIndex < _apiKeyList.length - 1) {
       keyIndex++
-      gutil.log(`apiKey 已超使用限制，切换使用第 ${keyIndex + 1} 个 apiKey: ${_apiKeyList[keyIndex]}`)
+      console.log(`apiKey 已超使用限制，切换使用第 ${keyIndex + 1} 个 apiKey: ${_apiKeyList[keyIndex]}`)
       AUTH_TOKEN = Buffer.from('api:' + _apiKeyList[keyIndex]).toString('base64') // 使用下一个 key
       cb() // 重试压缩
     } else {
-      gutil.log('提供的 apiKey 已均不可用，压缩结束')
+      console.log('提供的 apiKey 已均不可用，压缩结束')
     }
   } else {
     recordResult()
-    gutil.log('[error] : 文件不可压缩 - ', errorMsg)
+    console.log('[error] : 文件不可压缩 - ', errorMsg)
   }
 }
 
@@ -156,7 +154,7 @@ function tinypng (file, cb) {
             })
           } else {
             recordResult()
-            gutil.log('[error] : 文件下载错误 - ', results.message)
+            console.log('[error] : 文件下载错误 - ', results.message)
           }
         })
       } else {
@@ -165,7 +163,7 @@ function tinypng (file, cb) {
       }
     } else {
       recordResult()
-      gutil.log('[error] : 上传出错 - ', error)
+      console.log('[error] : 上传出错 - ', error)
     }
   })
 }
