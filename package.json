@@ -1,0 +1,36 @@
+{
+  "name": "tinypng-script-with-cache",
+	"author": "Momo707577045",
+	"license": "ISC",
+  "version": "1.0.1",
+	"description": "无依赖的 tinypng 压缩脚本",
+  "main": "tinypng-script-with-cache",
+	"files": [
+		"tinypng-script-with-cache"
+	],
+	"keywords": [
+		"gulpplugin",
+		"tinypng",
+		"image",
+		"minify",
+		"minifier",
+		"compress",
+		"cache",
+		"filter"
+	],
+  "dependencies": {
+		"md5": "^2.1.0",
+		"pretty-bytes": "^0.1.2",
+		"request": "^2.31.0",
+		"through2": "^0.4.2",
+		"vinyl": "^0.2.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Momo707577045/tinypng-script-with-cache.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Momo707577045/tinypng-script-with-cache/issues"
+  },
+  "homepage": "https://github.com/Momo707577045/tinypng-script-with-cache#readme"
+}
