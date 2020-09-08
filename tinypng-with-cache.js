@@ -3,7 +3,7 @@ const md5 = require('md5')
 const request = require('request')
 const through = require('through2')
 const prettyBytes = require('pretty-bytes')
-const PLUGIN_NAME = 'gulp-tinypng-with-cache' // 插件名
+const SCRIPT_NAME = 'tinypng-script-with-cache' // 插件名
 
 let AUTH_TOKEN = '' // 根据 aypi key 生成的请求头，
 let _createMd5FormOrigin = false // 不进行压缩操作，只生成现有图片的 md5 信息，并作为缓存。只会在接入本项目时用一次。
@@ -32,11 +32,7 @@ function recordResult () {
 }
 
 // 主函数
-function gulpMain ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompressPercentLimit = 0, createMd5FormOrigin = false }) {
-  if (!apiKeyList.length) {
-    throw new PluginError(PLUGIN_NAME, 'tinypny key 列表不能为空!')
-  }
-
+function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompressPercentLimit = 0, createMd5FormOrigin = false }) {
   _apiKeyList = apiKeyList
   _md5RecordFilePath = md5RecordFilePath
   _reportFilePath = reportFilePath
@@ -53,7 +49,7 @@ function gulpMain ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minComp
   // gulp 进入的主流程
   return through.obj(function (file, enc, callback) {
     if (file.isStream()) {
-      throw new PluginError(PLUGIN_NAME, 'Stream is not supported')
+      console.error(SCRIPT_NAME, 'Stream is not supported')
     } else if (file.isNull()) {
       this.push(file)
       return callback()
@@ -169,4 +165,4 @@ function tinypng (file, cb) {
 }
 
 
-module.exports = gulpMain
+module.exports = main
