@@ -42,11 +42,12 @@
   }
   ```
   ![配置图](http://upyun.luckly-mjw.cn/Assets/tinypng/004.png)
-- 第三步，修改脚本文件权限，```chmod  ./mtp.js```
+- 第三步，赋予脚本文件「可执行」权限，```chmod +x ./mtp.js```
 - 第四步，将脚本文件放置到项目所在目录
   ![运行效果](http://upyun.luckly-mjw.cn/Assets/tinypng/007.jpeg)
 - 第五步，在项目所在目录运行脚本```node ./mtp.js```
   ![运行效果](http://upyun.luckly-mjw.cn/Assets/tinypng/006.jpeg)
+- 后续使用，仅需最后两步「第四步」「第五步」
 
 
 ## 参数传递方式
