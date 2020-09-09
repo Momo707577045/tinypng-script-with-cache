@@ -3,7 +3,7 @@ let tinypng = require('./tinypng-with-cache')
 
 let apiKeyList = [] // 接口 key 默认为空
 let basePath = process.cwd() // 默认运行脚本所在目录
-let createMd5FormOrigin = false
+let createMd5FormOrigin = false // 不进行压缩操作，只生成现有图片的 md5 信息，并作为缓存。用于「初次项目接入」及手动清理冗余的「图片md5信息」
 
 // 如果有全局传值
 if (global.tinypngConf) {
@@ -14,8 +14,8 @@ if (global.tinypngConf) {
 
 // 动态参数传值
 basePath = process.argv[2] || basePath
-apiKeyList = process.argv[3] ? process.argv[3].split(',') : apiKeyList
-createMd5FormOrigin = process.argv[4] || createMd5FormOrigin === 'true'
+createMd5FormOrigin = process.argv[3] || createMd5FormOrigin
+apiKeyList = process.argv[4] ? process.argv[4].split(',') : apiKeyList
 
 let fileFilter = [
   basePath + '/**/*.png',
@@ -23,6 +23,13 @@ let fileFilter = [
   basePath + '/**/*.jpeg',
   '!/**/node_modules/*', // 忽略无需遍历的文件，路径匹配语法参考：https://www.gulpjs.com.cn/docs/getting-started/explaining-globs/
 ]
+
+console.log({
+  basePath,
+  apiKeyList,
+  fileFilter,
+  createMd5FormOrigin,
+})
 
 if (!apiKeyList.length) {
   return console.error('tinypng-script-with-cache', 'tinypny key 列表不能为空!')

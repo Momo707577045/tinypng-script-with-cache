@@ -85,6 +85,7 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
           record += `前: ${prettyBytes(prevSize)}`.padEnd(15)
           record += `后: ${prettyBytes(data.length)}`.padEnd(15)
           record += `压缩: ${prettyBytes(prevSize - data.length)}`.padEnd(18)
+          record += `压缩百分比: ${((prevSize - data.length) / (prevSize || 1) * 100).toFixed(2)}%`.padEnd(18)
           record += `${file.relative} `
           recordList.push(record)
           console.log(record)
