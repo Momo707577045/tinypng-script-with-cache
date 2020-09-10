@@ -24,17 +24,18 @@ let compressionInfo = {
   savePercent: 0, // 压缩百分比
 }
 
+console._log = (...params) => {
+  process.stdout.write(`\r`)
+  console.log(...params)
+}
+
 // 进程退出前执行操作
-process.on('exit', (code) => {
-  console.log(`process.on('exit'`, code)
-  recordResult()
-});
+process.on('exit', () => recordResult())
 
 // 记录压缩结果
 function recordResult () {
   const record = `共压缩 ${compressionInfo.num} 个文件，压缩前 ${prettyBytes(compressionInfo.originSize)}，压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，节省 ${prettyBytes(compressionInfo.saveSize)} 空间，压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%`
-  console.log(record)
-  clearInterval(intervalId)
+  console._log(record)
   recordList.push(record)
   _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList))
   _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(recordList))
@@ -46,10 +47,9 @@ function spin () {
   let dotList = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
   clearInterval(intervalId)
   intervalId = setInterval(() => {
-    process.stdout.clearLine()
     if (currentFileName) {
       index++
-      process.stdout.write(`\r${dotList[index % dotList.length]}${currentFileName}`)
+      process.stdout.write(`\r${dotList[index % dotList.length]} 压缩中 ${currentFileName}`)
     }
   }, 200)
 }
@@ -62,7 +62,7 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
   _minCompressPercentLimit = minCompressPercentLimit
   _createMd5FormOrigin = createMd5FormOrigin
   AUTH_TOKEN = Buffer.from('api:' + _apiKeyList[keyIndex]).toString('base64')
-  console.log(`当前使用第一个 apiKey:  ${_apiKeyList[keyIndex]}`)
+  console._log(`当前使用第一个 apiKey:  ${_apiKeyList[keyIndex]}`)
   spin()
   try {
     md5RecordList = JSON.parse(fs.readFileSync(_md5RecordFilePath) || '[]')
@@ -98,7 +98,8 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
         const compressPercentStr = compressPercent.toFixed(0) + '%' // 压缩百分比
         if (compressPercent < _minCompressPercentLimit) { // 无效压缩，保存源文件
           md5RecordList.push(md5(file.contents)) // 记录到缓存中
-          console.log(`压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`)
+
+          console._log(`压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`)
         } else { // 有效压缩
           file.contents = data
           compressionInfo.num++
@@ -112,16 +113,15 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
           record += `压缩百分比: ${((prevSize - data.length) / (prevSize || 1) * 100).toFixed(2)}%`.padEnd(18)
           record += `${file.relative} `
           recordList.push(record)
-          console.log(record)
+          console._log(record)
         }
         this.push(file)
         _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
         return callback()
       })
     }
-  }, function (callback) { // 全部处理完后进入的函数，记录压缩缓存
-    recordResult()
-    callback()
+  }, function () { // 遍历完成，退出
+    clearInterval(intervalId)
   })
 }
 
@@ -134,15 +134,15 @@ function checkApiKey (errorMsg, cb) {
   if (matchError.indexOf(errorMsg) > -1) {
     if (keyIndex < _apiKeyList.length - 1) {
       keyIndex++
-      console.log(`apiKey 已超使用限制，切换使用第 ${keyIndex + 1} 个 apiKey: ${_apiKeyList[keyIndex]}`)
+      console._log(`apiKey 已超使用限制，切换使用第 ${keyIndex + 1} 个 apiKey: ${_apiKeyList[keyIndex]}`)
       AUTH_TOKEN = Buffer.from('api:' + _apiKeyList[keyIndex]).toString('base64') // 使用下一个 key
       cb() // 重试压缩
     } else {
-      console.log('提供的 apiKey 已均不可用，压缩结束')
+      clearInterval(intervalId)
+      console._log('提供的 apiKey 已均不可用，压缩结束')
     }
   } else {
-    recordResult()
-    console.log('[error] : 文件不可压缩 - ', errorMsg)
+    console._log('[error] : 文件不可压缩 - ', errorMsg)
   }
 }
 
@@ -174,8 +174,7 @@ function tinypng (file, cb) {
               cb(body)
             })
           } else {
-            recordResult()
-            console.log('[error] : 文件下载错误 - ', results.message)
+            console._log('[error] : 文件下载错误 - ', results.message)
           }
         })
       } else {
@@ -183,8 +182,7 @@ function tinypng (file, cb) {
         checkApiKey(results.message, tinypng.bind(null, file, cb))
       }
     } else {
-      recordResult()
-      console.log('[error] : 上传出错 - ', error)
+      console._log('[error] : 上传出错 - ', error)
     }
   })
 }
