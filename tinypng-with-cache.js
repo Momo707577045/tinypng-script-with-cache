@@ -14,6 +14,8 @@ let _apiKeyList = [] // key 列表
 let recordList = [] // 压缩日志列表
 let md5RecordList = [] // 图片压缩后的 md5 记录数组
 let keyIndex = 0 // 当前使用第几个 Key
+let intervalId = -1 // 加载中计时器 id
+let currentFileName = '' // 当前压缩中的文件
 
 let compressionInfo = {
   num: 0, // 压缩的文件数
@@ -22,13 +24,34 @@ let compressionInfo = {
   savePercent: 0, // 压缩百分比
 }
 
+// 进程退出前执行操作
+process.on('exit', (code) => {
+  console.log(`process.on('exit'`, code)
+  recordResult()
+});
+
 // 记录压缩结果
 function recordResult () {
   const record = `共压缩 ${compressionInfo.num} 个文件，压缩前 ${prettyBytes(compressionInfo.originSize)}，压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，节省 ${prettyBytes(compressionInfo.saveSize)} 空间，压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%`
   console.log(record)
+  clearInterval(intervalId)
   recordList.push(record)
   _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList))
   _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(recordList))
+}
+
+// 加载中动画
+function spin () {
+  let index = 0
+  let dotList = '⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  clearInterval(intervalId)
+  intervalId = setInterval(() => {
+    process.stdout.clearLine()
+    if (currentFileName) {
+      index++
+      process.stdout.write(`\r${dotList[index % dotList.length]}${currentFileName}`)
+    }
+  }, 200)
 }
 
 // 主函数
@@ -40,6 +63,7 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
   _createMd5FormOrigin = createMd5FormOrigin
   AUTH_TOKEN = Buffer.from('api:' + _apiKeyList[keyIndex]).toString('base64')
   console.log(`当前使用第一个 apiKey:  ${_apiKeyList[keyIndex]}`)
+  spin()
   try {
     md5RecordList = JSON.parse(fs.readFileSync(_md5RecordFilePath) || '[]')
   } catch (e) {
@@ -54,7 +78,6 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
       this.push(file)
       return callback()
     } else if (file.isBuffer()) { // 正常处理的类型
-
       if (_createMd5FormOrigin) { // 不进行压缩操作，只生成现有图片的 md5 信息，并作为缓存。只会在接入本项目时用一次。
         md5RecordList.push(md5(file.contents)) // 记录到缓存中
         this.push(file)
@@ -68,6 +91,7 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
       }
 
       // 不命中缓存，进行压缩
+      currentFileName = file.relative // 设置压缩中的图片名
       let prevSize = file.contents.length // 压缩前的大小
       tinypng(file, (data) => {
         const compressPercent = (1 - data.length / prevSize) * 100// 压缩百分比
