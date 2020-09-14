@@ -29,7 +29,7 @@
 - 当然，中大型项目也可以用，只是其「无依赖」的特点在里面没那么突出。中大型项目推荐使用其 [gulp 版本](https://segmentfault.com/a/1190000023895556)，实现更灵活的配置。
 
 
-## 使用方式
+## 单文件使用方式
 - 第一步，点击[下载源码](http://upyun.luckly-mjw.cn/lib/mtp.js)
 - 第二步，在脚本文件头部添加 tinypng 的 [api key](https://tinypng.com/developers)
   ```
@@ -48,6 +48,14 @@
 - 第五步，在项目所在目录运行脚本```node ./mtp.js```
   ![运行效果](http://upyun.luckly-mjw.cn/Assets/tinypng/006.jpeg)
 - 后续使用，仅需最后两步「第四步」「第五步」
+
+
+## 全局配置使用方式
+- 第一步，全局安装```npm install -g tinypng-script-with-cache```
+- 第二步，全局配置 api key ```mtp setKey XgNgkoyWbdIZd8OizINMjX2TpxAd_Gp3,IAl6s3ekmONUVMEqWZdIp1nV2ItJLyPC```
+- 第三步，在项目所在目录运行脚本```mtp```
+  ![运行效果](http://upyun.luckly-mjw.cn/Assets/tinypng/006.jpeg)
+- 后续使用，无需配置，直接在目标目录运行```mtp```
 
 
 ## 参数传递方式

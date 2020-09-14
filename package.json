@@ -8,6 +8,9 @@
 	"files": [
 		"mtp"
 	],
+	"bin": {
+		"mtp": "./bin/mtp.js"
+	},
 	"keywords": [
 		"tinypng",
 		"image",
