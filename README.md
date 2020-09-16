@@ -52,7 +52,8 @@
 
 ## 全局配置使用方式
 - 第一步，全局安装```npm install -g tinypng-script-with-cache```
-- 第二步，全局配置 api key ```mtp setKey XgNgkoyWbdIZd8OizINMjX2TpxAd_Gp3,IAl6s3ekmONUVMEqWZdIp1nV2ItJLyPC```
+- 第二步，全局配置 api key
+  ```mtp setKey XgNgkoyWbdIZd8OizINMjX2TpxAd_Gp3,IAl6s3ekmONUVMEqWZdIp1nV2ItJLyPC```
 - 第三步，在项目所在目录运行脚本```mtp```
   ![运行效果](http://upyun.luckly-mjw.cn/Assets/tinypng/006.jpeg)
 - 后续使用，无需配置，直接在目标目录运行```mtp```

@@ -10,21 +10,22 @@ const action = process.argv[2] // 操作
 if (action === 'setKey') {
   const key = process.argv[3] // 应用 key
   if (!key) {
-    console.error('请输入 apiKey，多个 key，以「,」隔开')
+    console.error('\x1B[31m%s\x1B[0m', '请输入 apiKey，多个 key，以「,」隔开')
     process.exit(-1)
   }
 
   const keyList = key.split(',')
   keyList.forEach((keyItem) => {
     if (keyItem.trim().length !== 32) {
-      console.error(`api key 长度不正确：${keyItem}，请输入 32 位 api key。多个 key，以「,」隔开`)
+      console.error('\x1B[31m%s\x1B[0m', `api key 长度不正确：${keyItem}，请输入 32 位 api key。多个 key，以「,」隔开`)
       process.exit(-1)
     }
   })
   fs.writeFileSync(keyPath, JSON.stringify(keyList))
+  console.log('\x1B[32m%s\x1B[0m', 'apiKey 设置成功！')
 } else if (action === '-h') { // 帮助文档
   console.log(`
-  设置apiKey：
+  设置全局apiKey：
     格式：mtp setKey key,key
     示例：mtp setKey XgNgkoyWbdIZd8OizINMjX2TpxAd_Gp3,IAl6s3ekmONUVMEqWZdIp1nV2ItJLyPC
   压缩图片：
@@ -34,13 +35,18 @@ if (action === 'setKey') {
   更多详情，参考：https://github.com/Momo707577045/tinypng-script-with-cache  
   `)
 } else { // 尝试使用 key.json 中的 key
+  let apiKeyList = []
   try {
-    const apiKeyList = JSON.parse(fs.readFileSync(keyPath) || '[]')
+    apiKeyList = JSON.parse(fs.readFileSync(keyPath) || '[]')
     if (apiKeyList && apiKeyList.length) {
       global.tinypngConf = global.tinypngConf || {}
       global.tinypngConf.apiKeyList = apiKeyList
     }
   } catch (e) {
+  }
+
+  if (!apiKeyList || !apiKeyList.length) {
+    console.log('\x1B[31m%s\x1B[0m', '当前使用测试版 apiKey，请尽快设置私有 apiKey，详情查看 mtp -h')
   }
   require('../dist/mtp')
 }

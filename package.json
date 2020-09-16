@@ -2,12 +2,9 @@
 	"name": "tinypng-script-with-cache",
 	"author": "Momo707577045",
 	"license": "ISC",
-	"version": "1.0.1",
+	"version": "1.0.7",
 	"description": "无依赖的 tinypng 压缩脚本",
 	"main": "./dist/mtp.js",
-	"files": [
-		"mtp"
-	],
 	"bin": {
 		"mtp": "./bin/mtp.js"
 	},
@@ -28,6 +25,7 @@
 		"request": "^2.31.0",
 		"through2": "^0.4.2"
 	},
+
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/Momo707577045/tinypng-script-with-cache.git"
