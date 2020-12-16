@@ -2,7 +2,7 @@
 	"name": "tinypng-script-with-cache",
 	"author": "Momo707577045",
 	"license": "ISC",
-	"version": "1.0.7",
+	"version": "1.0.9",
 	"description": "无依赖的 tinypng 压缩脚本",
 	"main": "./dist/mtp.js",
 	"bin": {
