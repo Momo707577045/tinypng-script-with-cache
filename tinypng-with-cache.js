@@ -37,8 +37,8 @@ function recordResult () {
   const record = `共压缩 ${compressionInfo.num} 个文件，压缩前 ${prettyBytes(compressionInfo.originSize)}，压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，节省 ${prettyBytes(compressionInfo.saveSize)} 空间，压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%`
   console._log(record)
   recordList.push(record)
-  _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList))
-  _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(recordList))
+  _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList, null, 2))
+  _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(recordList, null, 2))
 }
 
 // 加载中动画
@@ -116,7 +116,7 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
           console._log(record)
         }
         this.push(file)
-        _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
+        _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList, null, 2)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
         return callback()
       })
     }
