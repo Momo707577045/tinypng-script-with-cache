@@ -30,15 +30,16 @@ console._log = (...params) => {
 }
 
 // 进程退出前执行操作
-process.on('exit', () => recordResult())
+process.on('exit', () => recordResult(true))
 
 // 记录压缩结果
-function recordResult () {
+function recordResult (withLog) {
   const record = `共压缩 ${compressionInfo.num} 个文件，压缩前 ${prettyBytes(compressionInfo.originSize)}，压缩后 ${prettyBytes(compressionInfo.originSize - compressionInfo.saveSize)}，节省 ${prettyBytes(compressionInfo.saveSize)} 空间，压缩百分比 ${((compressionInfo.saveSize / (compressionInfo.originSize || 1)) * 100).toFixed(0)}%`
-  console._log(record)
-  recordList.push(record)
+  withLog && console._log(record)
+  const _recordList = [].concat(recordList)
+  _recordList.push(record)
   _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList, null, 2))
-  _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(recordList, null, 2))
+  _reportFilePath && fs.writeFileSync(_reportFilePath, JSON.stringify(_recordList, null, 2))
 }
 
 // 加载中动画
@@ -98,7 +99,6 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
         const compressPercentStr = compressPercent.toFixed(0) + '%' // 压缩百分比
         if (compressPercent < _minCompressPercentLimit) { // 无效压缩，保存源文件
           md5RecordList.push(md5(file.contents)) // 记录到缓存中
-
           console._log(`压缩比例低于安全线，保存源文件: ${file.relative} 【${compressPercentStr}】`)
         } else { // 有效压缩
           file.contents = data
@@ -116,7 +116,8 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
           console._log(record)
         }
         this.push(file)
-        _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList, null, 2)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
+        recordResult()
+        // _md5RecordFilePath && fs.writeFileSync(_md5RecordFilePath, JSON.stringify(md5RecordList, null, 2)) // 每个文件压缩后，都保留一次 md5 信息。防止中途中断进程，浪费已压缩的记录。
         return callback()
       })
     }
@@ -126,23 +127,24 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
 }
 
 // 检测 key 文件，使用下一个 key
-function checkApiKey (errorMsg, cb) {
-  const matchError = [  // 匹配的错误信息
+function checkApiKey (errorMsg, tryNextKeyCb, skipFileCb) {
+  const keyErrorList = [  // key 错误信息
     'Credentials are invalid.', // apiKey 无效
-    'Your monthly limit has been exceeded', // 已超本月免费的 500 张限制
+    'Your monthly limit has been exceeded.', // 已超本月免费的 500 张限制
   ]
-  if (matchError.indexOf(errorMsg) > -1) {
+  if (keyErrorList.indexOf(errorMsg) > -1) {
     if (keyIndex < _apiKeyList.length - 1) {
       keyIndex++
       console._log(`apiKey 已超使用限制，切换使用第 ${keyIndex + 1} 个 apiKey: ${_apiKeyList[keyIndex]}`)
       AUTH_TOKEN = Buffer.from('api:' + _apiKeyList[keyIndex]).toString('base64') // 使用下一个 key
-      cb() // 重试压缩
+      tryNextKeyCb() // 重试压缩
     } else {
       clearInterval(intervalId)
       console._log('提供的 apiKey 已均不可用，压缩结束')
     }
-  } else {
+  } else { // 其他错误信息
     console._log('[error] : 文件不可压缩 - ', errorMsg)
+    skipFileCb() // 跳过该文件的压缩
   }
 }
 
@@ -179,7 +181,7 @@ function tinypng (file, cb) {
         })
       } else {
         // 检测 key 无效的错误码，从 key 列表中使用下一个 key
-        checkApiKey(results.message, tinypng.bind(null, file, cb))
+        checkApiKey(results.message, tinypng.bind(null, file, cb), cb.bind(null, file.contents))
       }
     } else {
       console._log('[error] : 上传出错 - ', error)

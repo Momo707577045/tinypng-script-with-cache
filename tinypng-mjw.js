@@ -21,7 +21,7 @@ let fileFilter = [
   basePath + '/**/*.png',
   basePath + '/**/*.jpg',
   basePath + '/**/*.jpeg',
-  '!/**/node_modules/*', // 忽略无需遍历的文件，路径匹配语法参考：https://www.gulpjs.com.cn/docs/getting-started/explaining-globs/
+  `!${basePath}/**/node_modules/**`, // 忽略无需遍历的文件，路径匹配语法参考：https://www.gulpjs.com.cn/docs/getting-started/explaining-globs/
 ]
 
 console.log({
