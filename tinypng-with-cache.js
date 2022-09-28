@@ -91,9 +91,14 @@ function main ({ apiKeyList = [], md5RecordFilePath, reportFilePath, minCompress
         return callback()
       }
 
-      // 不命中缓存，进行压缩
       currentFileName = file.relative // 设置压缩中的图片名
       let prevSize = file.contents.length // 压缩前的大小
+      if(!prevSize){
+        console.log(`${currentFileName} 文件信息错误，无法获取文件大小，跳过压缩`)
+        return callback()
+      }
+
+      // 正常压缩
       tinypng(file, (data) => {
         const compressPercent = (1 - data.length / prevSize) * 100// 压缩百分比
         const compressPercentStr = compressPercent.toFixed(0) + '%' // 压缩百分比
@@ -184,7 +189,8 @@ function tinypng (file, cb) {
         checkApiKey(results.message, tinypng.bind(null, file, cb), cb.bind(null, file.contents))
       }
     } else {
-      console._log('[error] : 上传出错 - ', error)
+      // console._log('[error] : 上传出错 - ', error)
+      checkApiKey(error.message, tinypng.bind(null, file, cb), cb.bind(null, file.contents))
     }
   })
 }

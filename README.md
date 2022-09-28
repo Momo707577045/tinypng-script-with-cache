@@ -111,11 +111,12 @@ basePath = process.argv[2] || basePath
 createMd5FormOrigin = process.argv[3] || createMd5FormOrigin
 apiKeyList = process.argv[4] ? process.argv[4].split(',') : apiKeyList
 
-let fileFilter = [
+let fileFilter = tinypngConf.fileFilter || [
   basePath + '/**/*.png',
   basePath + '/**/*.jpg',
   basePath + '/**/*.jpeg',
-  '!/**/node_modules/*', // 忽略无需遍历的文件，路径匹配语法参考：https://www.gulpjs.com.cn/docs/getting-started/explaining-globs/
+  `!${basePath}/**/node_modules/**`, // 忽略无需遍历的文件，路径匹配语法参考：https://www.gulpjs.com.cn/docs/getting-started/explaining-globs/
+  `!${basePath}/**/dist/**`,
 ]
 
 console.log({
